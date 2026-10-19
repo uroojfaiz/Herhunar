@@ -2,12 +2,12 @@
 
 ## Fields for the submission form
 Project Name: HerHunar
-Team Name: (add)
-Team Members: (add names and roles)
+Team Name: power of dev
+Team Members: urooj(solo)
 Live Demo URL: (add)
 GitHub Repository URL: (add)
 Demo Video URL: (add)
-AI Tools Used: Anthropic Claude API (matching, voice-to-listing, price suggestion, chatbot); AI coding assistant during development
+AI Tools Used: Anthropic Claude API (matching, voice-to-listing, price suggestion); AI coding assistant during development
 Known Limitations: Voice input works in Chrome or Edge only; translations beyond English and Urdu are partial; payments and CNIC verification are future work; seeded profiles are demo data.
 
 ## Problem statement

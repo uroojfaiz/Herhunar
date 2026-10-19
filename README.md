@@ -29,7 +29,6 @@ All AI calls go through the Anthropic API (Claude, default model `claude-haiku-4
 1. **AI Match** (`POST /api/ai/match`): the server pre-ranks services by keyword fit and rating (top 25), sends the customer's need and these candidates to Claude, which re-ranks them with reasoning. It returns the best 3, each with a one-sentence reason in the customer's language and a fair offer price. The server checks every returned id against the candidate list, so the AI cannot invent a hunarmand. If the AI is off or fails, a keyword matcher is used and the UI labels the result as "Basic".
 2. **Voice to listing** (`POST /api/ai/profile`): the browser transcribes Urdu speech (Web Speech API, Chrome), and Claude turns the transcript into a service title, category, description and price.
 3. **AI price suggestion** (`POST /api/ai/price`): Claude suggests a fair PKR range for a service. A fixed range per category is the fallback.
-4. **Hunar Saathi chatbot** (`POST /api/chat`): a guide for customers and hunarmands, answering in the user's chosen language.
 
 Third-party AI used: Anthropic Claude API. AI coding assistance was also used during development; all code was reviewed and tested by the team.
 
@@ -44,10 +43,6 @@ Third-party AI used: Anthropic Claude API. AI coding assistance was also used du
 2. Push this folder to a public GitHub repo, import it in Vercel (framework: Other).
 3. Add environment variables `MONGODB_URI`, `JWT_SECRET`, `ANTHROPIC_API_KEY`, `AI_MODEL`, then deploy.
 4. Open the live link in a private window and on a phone to check it works for others.
-
-### Hunar Saathi chatbot troubleshooting
-- For full open-ended AI answers, set `ANTHROPIC_API_KEY` in the deployment's server environment variables and redeploy. Never put this key in client-side code.
-- Without the key (or if the AI provider is unavailable), the chatbot now gives relevant built-in answers for common HerHunar questions instead of always returning the same generic message.
 
 ## Demo accounts
 After `npm run seed`: customer `03000000000`, hunarmands `03000000001` to `03000000005`, password `Demo1234`. All seeded profiles are demo data and are labelled "Demo profile".

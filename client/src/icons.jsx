@@ -23,4 +23,4 @@ tutor:<path d="M4 5h16v11H9l-5 4z"/>,
 online:<><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 20h20"/></>
 };
 export const Icon=({n})=><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{P[n]}</svg>;
-export const CatIcon=({n})=><Icon n={n}/>;
+export const CatIcon=({n})=><Icon n={P[n]?n:'work'}/>;

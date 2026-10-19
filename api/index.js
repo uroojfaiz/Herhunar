@@ -1,12 +1,4 @@
-
-require('dotenv').config();
-
-const express = require('express'),
-  mongoose = require('mongoose'),
-  jwt = require('jsonwebtoken'),
-  bcrypt = require('bcryptjs'),
-  cors = require('cors');
-
+const express=require('express'),mongoose=require('mongoose'),jwt=require('jsonwebtoken'),bcrypt=require('bcryptjs'),cors=require('cors');
 const {Schema,model,models}=mongoose,OID=Schema.Types.ObjectId;
 const User=models.User||model('User',new Schema({name:String,phone:{type:String,unique:true},pass:String,role:{type:String,enum:['customer','hunarmand']},gender:{type:String,default:'f'},whatsapp:String,bio:String,area:String,lat:Number,lng:Number,avatar:String,endorse:[OID]},{timestamps:true}));
 const Service=models.Service||model('Service',new Schema({owner:{type:OID,ref:'User',index:true},title:String,category:String,description:String,price:Number,images:[String],online:{type:Boolean,default:false},days:[Number]},{timestamps:true}));
@@ -32,7 +24,7 @@ const ratings=async()=>Object.fromEntries((await Order.aggregate([{$match:{ratin
 const hits=new Map();const limit=n=>(q,r,x)=>{const k=(q.headers['x-forwarded-for']||q.ip)+q.baseUrl+q.path,now=Date.now(),a=(hits.get(k)||[]).filter(t=>now-t<60000);if(a.length>=n)return r.status(429).json({error:'Too many requests. Please wait a minute.'});a.push(now);hits.set(k,a);x()};
 const R=express.Router();
 
-R.use('/auth',limit(20));R.use('/ai',limit(20));R.use('/chat',limit(30));R.use('/chats',limit(90));R.use('/messages',limit(90));R.use('/notifs',limit(60));
+R.use('/auth',limit(20));R.use('/ai',limit(20));R.use('/chats',limit(90));R.use('/messages',limit(90));R.use('/notifs',limit(60));
 R.post('/auth/signup',h(async(q,r)=>{const {name,phone,password,role,gender}=q.body;
  if(!name||!/^03\d{9}$/.test(phone||'')||(password||'').length<6)return r.status(400).json({error:'Enter your name, a 03XXXXXXXXX number and a 6+ character password'});
  if(await User.findOne({phone}))return r.status(409).json({error:'This number already has an account'});
@@ -50,7 +42,7 @@ R.put('/me',auth(),h(async(q,r)=>{const d={};['name','bio','area','whatsapp','av
 R.delete('/me',auth(),h(async(q,r)=>{await Service.deleteMany({owner:q.u.id});await Post.deleteMany({owner:q.u.id});await Msg.deleteMany({$or:[{from:q.u.id},{to:q.u.id}]});await Notif.deleteMany({$or:[{user:q.u.id},{from:q.u.id}]});await User.deleteOne({_id:q.u.id});r.json({ok:1})}));
 
 // Services (hunarmand work) + search
-const sv=b=>({title:String(b.title||'').slice(0,80),category:['tailor','food','beauty','tutor','online'].includes(b.category)?b.category:'tailor',description:String(b.description||'').slice(0,1000),price:Math.max(0,+b.price||0),images:(b.images||[]).slice(0,4).filter(i=>typeof i==='string'&&i.length<400000),online:!!b.online,days:(b.days||[]).filter(d=>d>=0&&d<7)});
+const sv=b=>({title:String(b.title||'').slice(0,80),category:String(b.category||'tailor').trim().slice(0,40)||'tailor',description:String(b.description||'').slice(0,1000),price:Math.max(0,+b.price||0),images:(b.images||[]).slice(0,4).filter(i=>typeof i==='string'&&i.length<400000),online:!!b.online,days:(b.days||[]).filter(d=>d>=0&&d<7)});
 R.get('/services',h(async(q,r)=>{const {q:s,category,women}=q.query,f={};
  if(category&&category!=='all')f.category=category;
  if(s){const rx=new RegExp(esc(s),'i'),ids=(await User.find({$or:[{name:rx},{area:rx}]}).select('_id')).map(x=>x._id);f.$or=[{title:rx},{description:rx},{category:rx},{owner:{$in:ids}}]}
@@ -78,55 +70,12 @@ R.patch('/orders/:id',auth(),h(async(q,r)=>{const o=await Order.findById(q.param
  if(C&&o.status==='done'&&b.rating&&!o.rating){o.rating=Math.min(5,Math.max(1,Math.round(+b.rating)||1));o.review=String(b.review||'').trim().slice(0,500);o.reviewImages=imgs(b.images,3);o.reviewedAt=new Date();meta.rating=o.rating;ev=['review',o.hunarmand]}
  await o.save();if(ev)await notify(ev[1],ev[0],q.u.id,meta,ev[0]==='review'?'/u/'+o.hunarmand:'/orders');r.json(o)}));
 
-// AI: chatbot and voice-to-profile (needs ANTHROPIC_API_KEY, otherwise a friendly fallback)
+// AI: voice-to-profile (needs ANTHROPIC_API_KEY, otherwise a friendly fallback)
 async function ask(system,messages){const k=process.env.ANTHROPIC_API_KEY;if(!k)return null;
  const x=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:process.env.AI_MODEL||'claude-haiku-4-5-20251001',max_tokens:400,system,messages})});
  const d=await x.json();return d.content&&d.content[0]&&d.content[0].text||null}
-function localHunarReply(text,lang,role){
- const x=String(text||'').toLowerCase();
- const ur=lang==='ur'||lang==='pa';
- const has=(...words)=>words.some(w=>x.includes(w));
- if(has('hello','hi','salam','السلام','ہیلو','سلام','assalam')){
-  return ur?'السلام علیکم! میں ہنرمند ساتھی ہوں۔ آپ کو ہنر تلاش کرنے، سروس شامل کرنے یا آرڈر دینے میں مدد چاہیے؟':'Hello! I am Hunar Saathi. Do you need help finding a service, adding your work, or placing an order?';
- }
- if(has('register','signup','sign up','account','رجسٹر','اکاؤنٹ','اکاؤنٹ بن')){
-  return ur?'اکاؤنٹ بنانے کے لیے Login/Sign up کھولیں، اپنا نام، موبائل نمبر اور کم از کم 6 حروف کا پاس ورڈ درج کریں، پھر اپنا کردار منتخب کریں۔':'Open Login/Sign up, enter your name, mobile number and a password of at least 6 characters, then choose your account role.';
- }
- if(has('service','work','listing','کام شامل','سروس','کام پوسٹ')){
-  return role==='hunarmand'
-   ?(ur?'اپنا کام شامل کرنے کے لیے My Work کھولیں، Add Service دبائیں، عنوان، تفصیل، قیمت اور تصاویر شامل کرکے محفوظ کریں۔':'Open My Work, choose Add Service, enter a title, description, price and photos, then save your listing.')
-   :(ur?'ہوم پر اپنی مطلوبہ سروس یا ہنر تلاش کریں۔ کسی ہنرمند کی پروفائل کھول کر اس کا کام اور قیمت دیکھ سکتے ہیں۔':'Search for the skill or service on the home page. Open a hunarmand’s profile to see their work and price.');
- }
- if(has('price','offer','rate','قیمت','پیسے','آفر')){
-  return ur?'سروس کھولیں اور اپنی قیمت کی آفر بھیجیں۔ ہنرمند آفر قبول کر سکتی ہیں یا دوسری قیمت تجویز کر سکتی ہیں۔':'Open a service and send your price offer. The hunarmand can accept it or suggest a different price.';
- }
- if(has('order','booking','buy','آرڈر','بک','خرید')){
-  return ur?'سروس منتخب کریں، قیمت کی آفر اور وقت درج کرکے آرڈر بھیجیں۔ پھر Orders میں آرڈر کی صورتحال دیکھیں۔':'Choose a service, enter your offer and preferred time, then submit the order. You can track its status in Orders.';
- }
- if(has('whatsapp','واٹس ایپ','واٹس ایپ')){
-  return ur?'ہنرمند کی سروس یا پروفائل کھولیں اور WhatsApp بٹن دبائیں تاکہ آپ براہِ راست رابطہ کر سکیں۔':'Open the hunarmand’s service or profile and use the WhatsApp button to contact them directly.';
- }
- if(has('password','login','log in','لاگ ان','پاس ورڈ')){
-  return ur?'Login صفحے پر اپنا رجسٹرڈ موبائل نمبر اور پاس ورڈ درج کریں۔ پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے۔':'On the Login page, enter the mobile number and password used when you registered. Passwords must be at least 6 characters.';
- }
- if(has('language','زبان','اردو')){
-  return ur?'اوپر Settings (⚙) کھولیں اور Language میں اپنی پسند کی زبان منتخب کریں۔':'Open Settings (⚙) and choose your preferred language under Language.';
- }
- return ur
-  ?'آپ کے سوال کا درست جواب دینے کے لیے AI سروس فعال ہونا ضروری ہے۔ براہِ کرم منتظم سے سرور کی ANTHROPIC_API_KEY ترتیب دینے کو کہیں، یا اپنا سوال ہنرمند کی سروس، قیمت، اکاؤنٹ یا آرڈر کے بارے میں واضح کریں۔'
-  :'I need the AI service enabled to answer that question freely. Please ask the site administrator to configure ANTHROPIC_API_KEY on the server, or ask me about services, pricing, accounts, or orders.';
-}
-R.post('/chat',h(async(q,r)=>{const {messages=[],lang='en',role='customer'}=q.body,L={en:'English',ur:'Urdu (Urdu script)',pa:'Punjabi (Shahmukhi)',sd:'Sindhi',ps:'Pashto',bal:'Balochi'}[lang]||'English';
- const sys=`You are Hunar Saathi, the helpful guide chatbot for HerHunar, a marketplace where women working from home offer tailoring, home food, beauty, tutoring and online skills. Customers can search by skill or area, view work photos, send a price offer, place orders and contact a hunarmand on WhatsApp. Hunarmands can create profiles, add services with photos, and accept or counter offers. Never claim to have searched the live database or changed an order unless a tool actually did so. If a question is outside HerHunar, answer it briefly and helpfully when possible. Reply in ${L}, in at most 5 short sentences using simple language. The user's role is ${role}.`;
- const m=(Array.isArray(messages)?messages:[]).slice(-10).map(x=>({role:x.role==='assistant'?'assistant':'user',content:String(x.content||'').slice(0,1000)}));
- const last=[...m].reverse().find(x=>x.role==='user');
- let a=null;
- try{a=await ask(sys,m)}catch(e){a=null}
- const reply=(typeof a==='string'&&a.trim())?a.trim():(last?localHunarReply(last.content,lang,role):'Ask me about using HerHunar, finding services, prices, or orders.');
- r.json({reply});
-}));
 R.post('/ai/profile',auth('hunarmand'),h(async(q,r)=>{const t=String(q.body.text||'').slice(0,800);
- const a=await ask('Turn the spoken text into JSON only: {"title":"short service title","category":"tailor|food|beauty|tutor|online","description":"two friendly sentences in the speaker language","price":number}. Output nothing else.',[{role:'user',content:t}]).catch(()=>null);
+ const a=await ask('Turn the spoken text into JSON only: {"title":"short service title","category":"tailor|food|beauty|tutor|online, or a concise new skill category if needed","description":"two friendly sentences in the speaker language","price":number}. Output nothing else.',[{role:'user',content:t}]).catch(()=>null);
  try{r.json(JSON.parse(a.replace(/```json|```/g,'')))}catch(e){r.json({title:t.slice(0,40),category:'tailor',description:t,price:0})}}));
 // Instagram-style public page: profile, photo posts (portfolio), likes
 R.get('/users/:id',auth(),h(async(q,r)=>{const u=await User.findById(q.params.id);if(!u)return r.status(404).json({error:'Not found'});
@@ -185,11 +134,11 @@ R.post('/ai/match',auth(),h(async(q,r)=>{const need=String(q.body.need||'').slic
  const cand=all.sort((a,b)=>score(b)-score(a)).slice(0,25),lst=cand.map(x=>({id:String(x._id),title:x.title,cat:x.category,price:x.price,area:x.owner.area||'',about:x.description.slice(0,120),rating:R_(x)||null,online:x.online}));
  const a=await ask('You are the matching engine of HerHunar, a marketplace of home-based women in Pakistan. Given a customer need and a list of services, pick the best 3 (fewer if few fit). Judge skill fit, rating, price and any place or time words in the need. Return JSON only: [{"id":"...","reason":"one short sentence in the same language as the need","price":number_fair_offer_in_PKR}].',[{role:'user',content:`Need: ${need}\nServices: ${JSON.stringify(lst)}`}]).catch(()=>null);
  let out=[];try{const ids=new Set(lst.map(x=>x.id));out=JSON.parse(a.replace(/```json|```/g,'')).filter(m=>ids.has(String(m.id))).slice(0,3)}catch(e){}
- const ai=out.length>0;if(!ai)out=cand.filter(x=>kw(x)>0).slice(0,3).map(x=>({id:String(x._id),reason:'Matches your words (basic matching, AI is off).',price:x.price}));
+ const ai=out.length>0,fallbackReason=q.body.lang==='ur'?'آپ کے الفاظ سے مطابقت (بنیادی تلاش؛ AI دستیاب نہیں)۔':q.body.lang==='sd'?'توهان جي لفظن سان ملي ٿو (بنيادي ڳولا؛ AI موجود ناهي).':'Matches your words (basic matching, AI is off).';if(!ai)out=cand.filter(x=>kw(x)>0).slice(0,3).map(x=>({id:String(x._id),reason:fallbackReason,price:x.price}));
  const by=Object.fromEntries(cand.map(x=>[String(x._id),x]));
  r.json({ai,matches:out.filter(m=>by[m.id]).map(m=>({...m,service:{...by[m.id].toObject(),owner:{...pub(by[m.id].owner),rating:rt[String(by[m.id].owner._id)]}}}))})}));
-R.post('/ai/price',auth('hunarmand'),h(async(q,r)=>{const b=sv(q.body),base={tailor:[700,1500],food:[300,800],beauty:[800,3000],tutor:[500,1500],online:[800,2500]}[b.category]||[500,1500];
- const a=await ask('You advise home-based women in Pakistan on fair prices in PKR. Return JSON only: {"min":number,"max":number,"reason":"one short sentence"}.',[{role:'user',content:`Service: ${b.title}, category ${b.category}, area ${q.body.area||'unknown'}. ${b.description}`}]).catch(()=>null);
- try{r.json({...JSON.parse(a.replace(/```json|```/g,'')),ai:true})}catch(e){r.json({min:base[0],max:base[1],reason:'Typical range for this category (AI is off).',ai:false})}}));
+R.post('/ai/price',auth('hunarmand'),h(async(q,r)=>{const b=sv(q.body),base={tailor:[700,1500],food:[300,800],beauty:[800,3000],tutor:[500,1500],online:[800,2500]}[b.category]||[500,1500],language=({en:'English',ur:'Urdu',sd:'Sindhi'})[q.body.lang]||'English';
+ const a=await ask(`You advise home-based women in Pakistan on fair prices in PKR. Write the reason in ${language}. Return JSON only: {"min":number,"max":number,"reason":"one short sentence"}.`,[{role:'user',content:`Service: ${b.title}, category ${b.category}, area ${q.body.area||'unknown'}. ${b.description}`}]).catch(()=>null);
+ try{r.json({...JSON.parse(a.replace(/```json|```/g,'')),ai:true})}catch(e){const reason=q.body.lang==='ur'?'اس ہنر کی عام قیمت کی حد (AI دستیاب نہیں ہے)۔':q.body.lang==='sd'?'هن هنر جي عام قيمت جي حد (AI موجود ناهي).':'Typical range for this category (AI is off).';r.json({min:base[0],max:base[1],reason,ai:false})}}));
 app.use('/api',R);
 app.models={User,Service,Order,Report,Post,Msg,Notif};module.exports=app;
