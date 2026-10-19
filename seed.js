@@ -1,0 +1,10 @@
+// Demo data for judges. Every profile is labelled "Demo profile". Run once: npm run seed
+const mongoose=require('mongoose'),bcrypt=require('bcryptjs'),{User,Service}=require('./api').models;
+const lat=+process.env.SEED_LAT||33.68,lng=+process.env.SEED_LNG||73.05; // set SEED_LAT / SEED_LNG to your city
+const D=[['Demo Saima','tailor','Suit stitching and alterations','Custom shalwar kameez, fitting and alterations. Eid orders welcome.',900,'Block A'],['Demo Nazia','food','Home-cooked biryani and desserts','Fresh home-cooked meals made to order, delivered in the neighbourhood.',450,'Block B'],['Demo Rabia','beauty','Bridal and party makeup at home','Makeup, mehndi and hairstyling at your home.',2500,'Block C'],['Demo Ayesha','tutor','Maths and English tuition, Class 6 to 10','Patient one-on-one tuition for school students, online or at home.',700,'Block D'],['Demo Mehwish','online','Logo and social media design','Logos, posters and social posts delivered online.',1200,'Online']];
+(async()=>{await mongoose.connect(process.env.MONGODB_URI);const pass=await bcrypt.hash('Demo1234',10);
+ const old=(await User.find({phone:/^0300000/}).select('_id')).map(o=>o._id);await Service.deleteMany({owner:{$in:old}});await User.deleteMany({phone:/^0300000/});
+ await User.create({name:'Demo Customer',phone:'03000000000',pass,role:'customer',gender:'f',whatsapp:'03000000000'});
+ for(const [i,x] of D.entries()){const u=await User.create({name:x[0],phone:'0300000'+String(i+1).padStart(4,'0'),pass,role:'hunarmand',gender:'f',whatsapp:'03000000000',area:x[5],bio:'Demo profile for judges',lat:lat+(i-2)*.01,lng:lng+(i%3-1)*.01,endorse:i<2?[1,2,3].map(()=>new mongoose.Types.ObjectId()):[]});
+  await Service.create({owner:u._id,title:x[2],category:x[1],description:x[3],price:x[4],days:[0,1,2,3,4],online:x[1]==='online'})}
+ console.log('Done. Customer login: 03000000000 / Demo1234. Hunarmand logins: 03000000001 to 03000000005 / Demo1234');process.exit(0)})().catch(e=>{console.error(e.message);process.exit(1)});
