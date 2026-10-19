@@ -1,6 +1,6 @@
 # HerHunar: AI marketplace for home-based women
 
-Live demo:https://herhunar-client.vercel.app/ · Demo video: _add link_ · Built for the NYLP AI Hackathon 2026
+Live demo:https://herhunar-client.vercel.app/ · Demo video: https://drive.google.com/file/d/1ZYP1rXNKpQ6iw2XAvJo4VaqAi3-Du0yR/view?usp=sharing· Built for the NYLP AI Hackathon 2026
 
 ## Problem
 Many women in Pakistan have real skills (tailoring, home cooking, beauty, tutoring, online work) but cannot leave home to work, and they have no easy way to build a name or find customers. Customers, in turn, struggle to find a trusted woman offering these services nearby.
