@@ -48,7 +48,7 @@ Third-party AI used: Anthropic Claude API. AI coding assistance was also used du
 After `npm run seed`: customer `03000000000`, hunarmands `03000000001` to `03000000005`, password `Demo1234`. All seeded profiles are demo data and are labelled "Demo profile".
 
 ## Screenshots
-_Add 3 to 4 screenshots here: home with AI Match, a service page, the hunarmand dashboard, mobile view._
+https://drive.google.com/drive/folders/1viYWPMDLlWOqw813zwnOktpYk5nbuUiK?usp=sharing
 
 ## Known limitations
 - Voice input needs a browser with speech recognition (Chrome or Edge).
