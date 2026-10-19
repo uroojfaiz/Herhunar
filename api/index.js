@@ -62,12 +62,22 @@ R.post('/orders',auth('customer'),h(async(q,r)=>{const s=await Service.findById(
 R.get('/orders',auth(),h(async(q,r)=>r.json(await Order.find({$or:[{customer:q.u.id},{hunarmand:q.u.id}]}).sort('-createdAt').limit(60).populate('service','title').populate('customer','name').populate('hunarmand','name'))));
 R.patch('/orders/:id',auth(),h(async(q,r)=>{const o=await Order.findById(q.params.id).populate('service','title');if(!o)return r.status(404).json({error:'Not found'});
  const b=q.body,H=String(o.hunarmand)===q.u.id,C=String(o.customer)===q.u.id;if(!H&&!C)return r.status(403).json({error:'Not allowed'});
+ if(['rating','review','images'].some(k=>Object.prototype.hasOwnProperty.call(b,k))){
+  if(!C)return r.status(403).json({error:'Only the customer can review this order'});
+  if(o.status!=='done')return r.status(400).json({error:'Only completed orders can be reviewed'});
+  if(o.rating)return r.status(409).json({error:'This order has already been reviewed'});
+  const rating=Number(b.rating),review=String(b.review||'').trim();
+  if(!Number.isInteger(rating)||rating<1||rating>5)return r.status(400).json({error:'Please choose a rating from 1 to 5'});
+  if(!review)return r.status(400).json({error:'Please write a review'});
+  o.rating=rating;o.review=review.slice(0,500);o.reviewImages=imgs(b.images,3);o.reviewedAt=new Date();
+  const me=await User.findById(q.u.id).select('name'),meta={name:me&&me.name,title:o.service&&o.service.title,price:o.price,rating:o.rating};
+  await o.save();await notify(o.hunarmand,'review',q.u.id,meta,'/u/'+o.hunarmand);return r.json(o)
+ }
  const me=await User.findById(q.u.id).select('name'),meta={name:me&&me.name,title:o.service&&o.service.title,price:o.price};let ev=null;
  if(H&&b.status==='accepted'&&o.status==='offered'){o.status='accepted';ev=['accepted',o.customer]}
  if(H&&b.status==='countered'&&o.status==='offered'){o.status='countered';o.price=+b.price||o.price;meta.price=o.price;ev=['countered',o.customer]}
  if(C&&b.status==='accepted'&&o.status==='countered'){o.status='accepted';ev=['accepted',o.hunarmand]}
  if(H&&b.status==='done'&&o.status==='accepted'){o.status='done';ev=['done',o.customer]}
- if(C&&o.status==='done'&&b.rating&&!o.rating){o.rating=Math.min(5,Math.max(1,Math.round(+b.rating)||1));o.review=String(b.review||'').trim().slice(0,500);o.reviewImages=imgs(b.images,3);o.reviewedAt=new Date();meta.rating=o.rating;ev=['review',o.hunarmand]}
  await o.save();if(ev)await notify(ev[1],ev[0],q.u.id,meta,ev[0]==='review'?'/u/'+o.hunarmand:'/orders');r.json(o)}));
 
 // AI: voice-to-profile (needs ANTHROPIC_API_KEY, otherwise a friendly fallback)

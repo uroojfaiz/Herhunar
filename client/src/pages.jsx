@@ -183,9 +183,9 @@ const dayLab=(s,t,lang)=>{const d=new Date(s),n=new Date();if(d.toDateString()==
 const pickImgs=async(e,old,max,setM)=>{try{const n=[];for(const x of [...e.target.files].slice(0,max))n.push(await readImg(x,640,.6));return [...old,...n].slice(0,max)}catch(x){setM(x.message);return old}finally{e.target.value=''}};
 function ReviewForm({o,done,setM}){
  const {t}=useContext(Ctx),[open,setOpen]=useState(false),[r,setR]=useState(0),[txt,setTxt]=useState(''),[im,setIm]=useState([]),[busy,setBusy]=useState(false);
- const go=async()=>{if(!r)return setM(t('pickStars'));setBusy(true);try{await api('/orders/'+o._id,{method:'PATCH',body:{rating:r,review:txt,images:im}});setM('');done()}catch(x){setM(x.message)}setBusy(false)};
- if(!open)return <button className="btn or" onClick={()=>setOpen(true)}>★ {t('writeReview')}</button>;
- return <div className="review-form"><Stars v={r} set={setR}/><textarea rows={3} maxLength={500} value={txt} placeholder={t('reviewPh')} onChange={e=>setTxt(e.target.value)}/>
+ const go=async()=>{if(!r)return setM(t('pickStars'));if(!txt.trim())return setM(t('reviewRequired'));setBusy(true);try{await api('/orders/'+o._id,{method:'PATCH',body:{rating:r,review:txt,images:im}});setM('');done()}catch(x){setM(x.message)}setBusy(false)};
+ if(!open)return <div className="review-form"><p>{t('reviewPrompt')}</p><button className="btn or" onClick={()=>setOpen(true)}>★ {t('writeReview')}</button></div>;
+ return <div className="review-form"><Stars v={r} set={setR}/><textarea rows={3} maxLength={500} required aria-required="true" value={txt} placeholder={t('reviewPh')} onChange={e=>setTxt(e.target.value)}/>
   <label>{t('addPhotos')}<input type="file" accept="image/*" multiple onChange={async e=>setIm(await pickImgs(e,im,3,setM))}/></label>
   <div className="gal">{im.map((x,i)=><img key={i} src={x} alt="" onClick={()=>setIm(im.filter((_,j)=>j!==i))}/>)}</div>
   <div className="row"><button className="btn or" disabled={busy} onClick={go}>{busy?'…':t('submit')}</button><button className="btn ghost" onClick={()=>setOpen(false)}>{t('cancel')}</button></div></div>}
@@ -216,7 +216,7 @@ export function UserPage(){
  const editCap=async p=>{const c=prompt(t('editCaption'),p.caption||'');if(c===null)return;try{await api('/posts/'+p._id,{method:'PATCH',body:{caption:c}});setSel({...p,caption:c});load()}catch(x){setM(x.message)}};
  const days=[];d.posts.forEach(p=>{const k=new Date(p.at).toDateString();let g=days[days.length-1];if(!g||g.k!==k){g={k,at:p.at,list:[]};days.push(g)}g.list.push(p)});
  return <div className="page640"><div className="profile"><div className="ptop"><Av u={u} big/>
-   <div className="pstats">{hun?<><div><b>{d.posts.length}</b><small>{t('posts')}</small></div><div><b>{u.rating?u.rating.avg:'–'}</b><small>★ {t('rev')}</small></div><div><b>{u.vouch||0}</b><small>{t('vouch')}</small></div></>:<div><b>{u.vouch||0}</b><small>{t('vouch')}</small></div>}</div></div>
+   <div className="pstats">{hun?<><div><b>{d.posts.length}</b><small>{t('posts')}</small></div><div><b>{u.rating?`${u.rating.avg} / 5`:'–'}</b><small>★ {t('rev')} ({u.rating&&u.rating.n||0})</small></div><div><b>{u.vouch||0}</b><small>{t('vouch')}</small></div></>:<div><b>{u.vouch||0}</b><small>{t('vouch')}</small></div>}</div></div>
   <h2 className="pname">{u.name}{u.vouch>=3&&<span className="vok"> ✓</span>}</h2>{(u.area||u.vouch>=3)&&<div className="mut">{u.area&&`📍 ${u.area} `}{u.vouch>=3&&<span className="tag">✓ {t('ver')}</span>}</div>}{u.bio&&<p>{u.bio}</p>}
   <div className="cta">{mine?<><Link className="btn ghost" to="/me">✎ {t('editProfile')}</Link>{hun&&<Link className="btn ghost" to="/work">🛠 {t('myWork')}</Link>}<button className="btn ghost" onClick={logout}>{t('logout')}</button></>
    :<><Link className="btn" to={'/chat/'+u.id}>✉ {t('msg')}</Link><a className="btn ghost" target="_blank" rel="noopener noreferrer" href={`https://wa.me/${wa(u.whatsapp)}`}>💬 WhatsApp</a></>}</div></div>

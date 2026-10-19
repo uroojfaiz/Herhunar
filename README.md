@@ -12,7 +12,7 @@ HerHunar connects home-based women (hunarmands) with customers in their area. A 
 - Signup and login (JWT) for customers and hunarmands, with full profile CRUD (photo, area, WhatsApp, location)
 - Hunarmands add, edit and delete their work with photos and available days (portfolio)
 - Search by skill, name or area; filters for category, women-only and near me; live map
-- Price offers: offer, accept, counter, complete, rate
+- Price offers: offer, accept, counter, complete, then the customer submits a required 1–5 star rating and written review, shown on the hunarmand's public profile
 - Instagram-style public page for every hunarmand: profile, stats, photo grid of her work with captions and likes, and her services
 - Private in-app messages between customer and hunarmand: inbox, unread count, sent/seen receipts, edit (within 15 minutes), delete (unsend), emoji picker, plus one-tap WhatsApp (wa.me)
 - Trust and safety: neighbour vouching (3 vouches show a verified badge), report button, location rounded to about 1 km, exact address never stored

@@ -1,6 +1,6 @@
 export const EXTRA={
- en:{category:'Skill category',otherSkill:'Other skill',skillName:'Name your skill',basic:'Basic',voice:'Speak in your selected language (AI writes it)',ok:'OK',close:'Close',smaller:'Smaller text',larger:'Larger text',aiCredit:'AI by Claude (Anthropic)',contactTemplate:'Assalam o Alaikum {name}, I saw "{title}" on HerHunar and would like to know more.',mainNav:'Main navigation',previous:'Previous',next:'Next'},
- ur:{category:'ہنر کی قسم',otherSkill:'دوسرا ہنر',skillName:'اپنے ہنر کا نام لکھیں',basic:'بنیادی',voice:'اپنی منتخب زبان میں بولیں (AI لکھ دے گا)',ok:'ٹھیک ہے',close:'بند کریں',smaller:'چھوٹا متن',larger:'بڑا متن',aiCredit:'Claude (Anthropic) کی AI',contactTemplate:'السلام علیکم {name}، میں نے ہنر گھر پر "{title}" دیکھا ہے اور مزید جاننا چاہتا/چاہتی ہوں۔',mainNav:'مرکزی نیویگیشن',previous:'پچھلا',next:'اگلا'},
+ en:{category:'Skill category',otherSkill:'Other skill',skillName:'Name your skill',basic:'Basic',voice:'Speak in your selected language (AI writes it)',ok:'OK',close:'Close',smaller:'Smaller text',larger:'Larger text',aiCredit:'AI by Claude (Anthropic)',contactTemplate:'Assalam o Alaikum {name}, I saw "{title}" on HerHunar and would like to know more.',mainNav:'Main navigation',previous:'Previous',next:'Next',writeReview:'Rate & review',reviewPrompt:'Rate this completed order and share your experience to help future customers.',reviewPh:'How was the work? Tell future customers about your experience.',reviewRequired:'Please write a short review.',submit:'Submit rating & review'},
+ ur:{category:'ہنر کی قسم',otherSkill:'دوسرا ہنر',skillName:'اپنے ہنر کا نام لکھیں',basic:'بنیادی',voice:'اپنی منتخب زبان میں بولیں (AI لکھ دے گا)',ok:'ٹھیک ہے',close:'بند کریں',smaller:'چھوٹا متن',larger:'بڑا متن',aiCredit:'Claude (Anthropic) کی AI',contactTemplate:'السلام علیکم {name}، میں نے ہنر گھر پر "{title}" دیکھا ہے اور مزید جاننا چاہتا/چاہتی ہوں۔',mainNav:'مرکزی نیویگیشن',previous:'پچھلا',next:'اگلا',writeReview:'ریٹنگ اور رائے دیں',reviewPrompt:'اس مکمل آرڈر کی ریٹنگ دیں اور اپنا تجربہ لکھیں تاکہ دوسرے گاہکوں کو مدد ملے۔',reviewPh:'کام کیسا ہوا؟ اپنا تجربہ لکھیں تاکہ دوسرے گاہک جان سکیں۔',reviewRequired:'براہ کرم مختصر رائے ضرور لکھیں۔',submit:'ریٹنگ اور رائے جمع کریں'},
 };
 
 export const SD={
@@ -146,11 +146,13 @@ export const SD={
  reviews:'راءِ',
  services:'سروسون',
  noReviews:'اڃا ڪا راءِ ناهي',
- writeReview:'راءِ لکو',
  pickStars:'مهرباني ڪري تارن جو درجو چونڊيو',
- reviewPh:'ڪم ڪيئن ٿيو؟ (اختياري)',
+ reviewPh:'ڪم ڪيئن ٿيو؟ ٻين گراهڪن لاءِ پنهنجو تجربو لکو.',
+ reviewPrompt:'هن مڪمل ٿيل آرڊر کي درجو ڏيو ۽ پنهنجو تجربو لکو ته جيئن ايندڙ گراهڪن کي مدد ملي.',
+ reviewRequired:'مهرباني ڪري مختصر راءِ لکو.',
+ writeReview:'درجو ۽ راءِ ڏيو',
+ submit:'درجو ۽ راءِ جمع ڪريو',
  addPhotos:'تصويرون شامل ڪريو (وڌ ۾ وڌ 3)',
- submit:'جمع ڪريو',
  postWork:'اڄ جو ڪم پوسٽ ڪريو',
  postPh:'اڄ توهان ڇا ٺاهيو؟',
  postBtn:'پوسٽ ڪريو',
