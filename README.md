@@ -1,6 +1,6 @@
 # HerHunar: AI marketplace for home-based women
 
-Live demo: _add your Vercel link here_ · Demo video: _add link_ · Built for the NYLP AI Hackathon 2026
+Live demo:https://herhunar-client.vercel.app/ · Demo video: _add link_ · Built for the NYLP AI Hackathon 2026
 
 ## Problem
 Many women in Pakistan have real skills (tailoring, home cooking, beauty, tutoring, online work) but cannot leave home to work, and they have no easy way to build a name or find customers. Customers, in turn, struggle to find a trusted woman offering these services nearby.
@@ -59,4 +59,4 @@ _Add 3 to 4 screenshots here: home with AI Match, a service page, the hunarmand 
 - In-app chat refreshes by polling every few seconds (no websockets on Vercel serverless); image messages are not supported yet.
 
 ## Team contributions
-_Name: role and what they built_
+_Name: This project completely create ,deply and submit by Urooj (solo)
